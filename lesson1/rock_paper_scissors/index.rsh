@@ -10,7 +10,8 @@ export const main = Reach.App(() => {
     ...Player,
     wager: UInt,
   });
-  const Bob   = Participant('Bob', {
+
+  const Bob = Participant('Bob', {
     ...Player,
     acceptWager: Fun([UInt], Null),
   });
@@ -19,6 +20,7 @@ export const main = Reach.App(() => {
   Alice.only(() => {
     const handAlice = declassify(interact.getHand())
   })
+
   Alice.publish(handAlice)
   commit()
 
