@@ -13,7 +13,7 @@ export const main = Reach.App(() => {
     deadline: UInt,
   });
 
-  const Eve = Participant('Eve', {
+  const Bob = Participant('Bob', {
     ...Player,
     acceptWager: Fun([UInt], Null),
   });
@@ -33,18 +33,24 @@ export const main = Reach.App(() => {
   Alice.publish(wager, handAlice).pay(wager)
   commit();
 
-  Eve.only(()=> {
+  Bob.only(()=> {
     interact.acceptWager(wager);
+    const handBob = declassify(interact.getHand())
     timeout(relativeTime(deadline), ()=> closeTo(Alice, informTimeout()))
 
   })
-  Eve.publish().pay(wager)
+  Bob.publish(handBob).pay(wager)
   
-  
+  const outCome = (handAlice + (4 - handBob) % 3)
+  const [forAlice, forBob] =
+  outCome === 2 ? [2,0]:
+  outCome === 0 ? [0,2]: [1,1]
+
   transfer(forAlice * wager).to(Alice)
+  transfer(forBob * wager).to(Bob)
   commit()
 
-  each([Alice, Eve], () => {
+  each([Alice, Bob], () => {
     interact.seeOutcome(outCome)
   })
 
