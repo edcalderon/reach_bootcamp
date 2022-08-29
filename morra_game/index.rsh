@@ -31,13 +31,11 @@ const Player = {
 }
 export const main = Reach.App(() => {
   const A = Participant('Alice', {
-    // Specify Alice's interact interface here
     ...Player,
     wager: UInt,
     deadline: UInt
   });
   const B = Participant('Bob', {
-    // Specify Bob's interact interface here
     ...Player,
     acceptWager: Fun([UInt], Null)
   });
@@ -105,11 +103,9 @@ export const main = Reach.App(() => {
   transfer(2 * wager).to(outcome == A_WINS ? A : B);
   commit();
 
-
-
   each([A, B], () => {
     interact.seeOutcome(outcome)
   });
-  // write your program here
+
   exit();
 });

@@ -1,57 +1,54 @@
 'reach 0.1';
+const [isFortune, MONEY, HEALTH, DIE] = makeEnum(3)
+const [isDesition, TRUE, FALSE] = makeEnum(2)
 
 const Player = {
-  getHand: Fun([], UInt),
-  seeOutcome: Fun([UInt], Null),
+  ...hasRandom,
   informTimeout: Fun([], Null)
 };
 
 export const main = Reach.App(() => {
   const Alice = Participant('Alice', {
     ...Player,
-    wager: UInt,
-    deadline: UInt,
+    amount: UInt,
+    decide: Fun([UInt], UInt),
+    deadline: UInt
   });
-
   const Bob = Participant('Bob', {
     ...Player,
-    acceptWager: Fun([UInt], Null),
+    readFortune: Fun([], UInt)
   });
   init();
-
-  const informTimeout = () => {
-      each([Alice, Bob], () => {
-        interact.informTimeout()
-      });
-  }
-
   Alice.only(() => {
-    const wager = declassify(interact.wager);
-    const handAlice = declassify(interact.getHand())
-  })
-
-  Alice.publish(wager, handAlice).pay(wager)
+    const amount = declassify(interact.amount)
+    const deadline = declassify(interact.deadline)
+  }
+  )
+  Alice.publish(amount, deadline)
+    .pay(amount)
   commit();
 
-  Bob.only(()=> {
-    interact.acceptWager(wager);
-    const handBob = declassify(interact.getHand())
-  })
-  Bob.publish(handBob)
-    .pay(wager)
-    .timeout(relativeTime(deadline), ()=> closeTo(Alice, informTimeout()))
+  Bob.publish()
   
-  const outCome = (handAlice + (4 - handBob) % 3)
-  const [forAlice, forBob] =
-  outCome === 2 ? [2,0]:
-  outCome === 0 ? [0,2]: [1,1]
+  var accepted = FALSE
+  invariant(balance() == amount)
+  while (accepted == FALSE) {
+    commit()
+    Bob.only(() => {
+      const fortune = declassify(interact.readFortune())
+    }
+    )
+    Bob.publish(fortune);
+    commit()
+    Alice.only(() => {
+      const desition = declassify(interact.decide(fortune))
+    })
+    Alice.publish(desition)
+    accepted = desition
+    continue
+  }
 
-  transfer(forAlice * wager).to(Alice)
-  transfer(forBob * wager).to(Bob)
-  commit()
-
-  each([Alice, Bob], () => {
-    interact.seeOutcome(outCome)
-  })
-
-})
+  transfer(amount).to(Bob);
+  commit();
+  exit();
+});
